@@ -18,7 +18,7 @@ def generate_test_image():
         file.write(b'test_content\n')
 
 
-def get_matrix(src, append_zero=True):
+def get_source(src, append_zero=True):
     source = []
     for x in src:
         line = bin(ord(x))[2:]
@@ -32,11 +32,10 @@ def get_matrix(src, append_zero=True):
 def get_bitmap(filename=DEFAULT_FILENAME):
     with open(filename) as file:
         source = file.readlines()[-1].split()[0]
-    return get_matrix(source)
+    return get_source(source)
 
 
-def normalize(src):
-    print(src)
+def delete_irrelevant(src):
     delta = len(src[0]) - (len(src[0]) % 8)
     if delta != len(src[0]):
         normalized = []
@@ -47,10 +46,25 @@ def normalize(src):
         return src
 
 
-def encrypt(src, message=DEFAULT_MESSAGE):
-    src = normalize(src)
+def get_msg_map(msg, src_len):
+    empty = [0, 0, 0, 0, 0, 0, 0]
+    msg = get_source(msg, False)
+    while len(msg) < src_len:
+        msg.append(empty)
+    return msg
 
+
+def write_output(src):
     pass
+
+
+def encrypt(src, message=DEFAULT_MESSAGE):
+    src = delete_irrelevant(src)
+    message = get_msg_map(message, len(src))
+    res = []
+    for i in range(len(src)):
+        res.append(src[i] + message[i])
+    return res
 
 
 def decrypt():
@@ -69,7 +83,7 @@ bitmap = get_bitmap()
 
 mode = '1'
 if mode == '1':
-    encrypt(bitmap)
+    write_output(encrypt(bitmap))
 else:
     decrypt()
 
