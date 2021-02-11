@@ -1,6 +1,6 @@
 import sys
-import numpy as np
 DEFAULT_FILENAME = 'test.pbm'
+DEFAULT_MESSAGE = 'SECRET'
 
 
 def verify_input(input_str):
@@ -18,20 +18,38 @@ def generate_test_image():
         file.write(b'test_content\n')
 
 
-def get_bitmap(filename=DEFAULT_FILENAME):
-    with open(filename) as file:
-        raw_source = file.readlines()[-1].split()[0]
+def get_matrix(src, append_zero=True):
     source = []
-    for x in raw_source:
+    for x in src:
         line = bin(ord(x))[2:]
         line = [int(x) for x in line]
-        while len(line) < 8:
+        while append_zero and len(line) < 8:
             line.insert(0, 0)
         source.append(line)
-    return np.matrix(source)
+    return source
 
 
-def encrypt():
+def get_bitmap(filename=DEFAULT_FILENAME):
+    with open(filename) as file:
+        source = file.readlines()[-1].split()[0]
+    return get_matrix(source)
+
+
+def normalize(src):
+    print(src)
+    delta = len(src[0]) - (len(src[0]) % 8)
+    if delta != len(src[0]):
+        normalized = []
+        for row in src:
+            normalized.append(row[:delta:])
+        return normalized
+    else:
+        return src
+
+
+def encrypt(src, message=DEFAULT_MESSAGE):
+    src = normalize(src)
+
     pass
 
 
@@ -48,10 +66,10 @@ def decrypt():
 
 generate_test_image()
 bitmap = get_bitmap()
-print(bitmap)
 
-# if mode == '1':
-#     encrypt()
-# else:
-#     decrypt()
+mode = '1'
+if mode == '1':
+    encrypt(bitmap)
+else:
+    decrypt()
 
