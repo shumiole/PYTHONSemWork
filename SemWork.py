@@ -55,7 +55,18 @@ def get_msg_map(msg, src_len):
 
 
 def write_output(src):
-    pass
+    with open("output.pbm", 'bw') as file:
+        file.write(b'P4\n')
+        file.write(b'15 12\n')
+        for row in src:
+            line = ''
+            for x in row[:8:]:
+                line += str(x)
+            file.write(bytearray([int(line, 2)]))
+            line = ''
+            for x in row[8::]:
+                line += str(x)
+            file.write(bytes([int(line, 2)]))
 
 
 def encrypt(src, message=DEFAULT_MESSAGE):
