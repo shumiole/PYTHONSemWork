@@ -1,5 +1,6 @@
 import sys
 DEFAULT_FILENAME = 'test.pbm'
+DEFAULT_INPUT = 'output.pbm'
 DEFAULT_MESSAGE = 'ABC'
 
 
@@ -18,7 +19,7 @@ def generate_test_image():
         file.write(b'test_content\n')
 
 
-def get_source(src, significant=8, append_zero=True):
+def get_source(src, significant=8):
     source = []
     for x in src:
         line = bin(ord(x))[2:]
@@ -35,6 +36,9 @@ def get_bitmap(filename=DEFAULT_FILENAME):
     return get_source(source, int(significant))
 
 
+divide = lambda lst, sz: [lst[i:i + sz] for i in range(0, len(lst), sz)]
+
+
 def get_msg_map(msg, item_len):
     msg = get_source(msg, 8, False)
     msg_unformatted = []
@@ -42,7 +46,6 @@ def get_msg_map(msg, item_len):
         for x in item:
             msg_unformatted.append(x)
 
-    divide = lambda lst, sz: [lst[i:i + sz] for i in range(0, len(lst), sz)]
     return divide(msg_unformatted, 8 - item_len % 8)
 
 
@@ -71,7 +74,26 @@ def encrypt(src, message=DEFAULT_MESSAGE):
 
 
 def decrypt():
-    pass
+    with open(DEFAULT_INPUT) as file:
+        lines = file.readlines()
+
+    source = []
+    for x in lines[-1]:
+        line = bin(ord(x))[2:]
+        line = [int(x) for x in line]
+        source.append(line[-3:])
+
+    msg_unf = ""
+    for item in source:
+        for x in item:
+            msg_unf += str(x)
+
+    msg = divide(msg_unf, 7)
+
+    print("Decryted message:")
+    for it in msg:
+        if int(it, 2) != 0:
+            print(chr(int(it, 2)), end='')
 
 
 # mode = input("Please, choose mode:\n"
@@ -85,7 +107,7 @@ generate_test_image()
 bitmap = get_bitmap()
 
 mode = '1'
-if mode == '1':
+if mode == '2':
     write_output(encrypt(bitmap))
 else:
     decrypt()
