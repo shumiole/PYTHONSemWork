@@ -1,6 +1,6 @@
 import sys
 DEFAULT_FILENAME = 'test.pbm'
-DEFAULT_MESSAGE = 'SECRET'
+DEFAULT_MESSAGE = 'ABC'
 
 
 def verify_input(input_str):
@@ -14,67 +14,59 @@ def verify_input(input_str):
 def generate_test_image():
     with open(DEFAULT_FILENAME, 'bw') as file:
         file.write(b'P4\n')
-        file.write(b'8 12\n')
+        file.write(b'5 12\n')
         file.write(b'test_content\n')
 
 
-def get_source(src, append_zero=True):
+def get_source(src, significant=8, append_zero=True):
     source = []
     for x in src:
         line = bin(ord(x))[2:]
         line = [int(x) for x in line]
-        while append_zero and len(line) < 8:
-            line.insert(0, 0)
-        source.append(line)
+        source.append(line[:significant])
     return source
 
 
 def get_bitmap(filename=DEFAULT_FILENAME):
     with open(filename) as file:
-        source = file.readlines()[-1].split()[0]
-    return get_source(source)
+        lines = file.readlines()
+        significant = lines[1].split()[0]
+        source = lines[-1].split()[0]
+    return get_source(source, int(significant))
 
 
-def delete_irrelevant(src):
-    delta = len(src[0]) - (len(src[0]) % 8)
-    if delta != len(src[0]):
-        normalized = []
-        for row in src:
-            normalized.append(row[:delta:])
-        return normalized
-    else:
-        return src
+def get_msg_map(msg, item_len):
+    msg = get_source(msg, 8, False)
+    msg_unformatted = []
+    for item in msg:
+        for x in item:
+            msg_unformatted.append(x)
 
-
-def get_msg_map(msg, src_len):
-    empty = [0, 0, 0, 0, 0, 0, 0]
-    msg = get_source(msg, False)
-    while len(msg) < src_len:
-        msg.append(empty)
-    return msg
+    divide = lambda lst, sz: [lst[i:i + sz] for i in range(0, len(lst), sz)]
+    return divide(msg_unformatted, 8 - item_len % 8)
 
 
 def write_output(src):
     with open("output.pbm", 'bw') as file:
         file.write(b'P4\n')
-        file.write(b'15 12\n')
+        file.write(b'5 12\n')
         for row in src:
             line = ''
             for x in row[:8:]:
                 line += str(x)
             file.write(bytearray([int(line, 2)]))
-            line = ''
-            for x in row[8::]:
-                line += str(x)
-            file.write(bytes([int(line, 2)]))
 
 
 def encrypt(src, message=DEFAULT_MESSAGE):
-    src = delete_irrelevant(src)
-    message = get_msg_map(message, len(src))
+    message = get_msg_map(message, len(src[0]))
+    empty = [0, 0, 0]
     res = []
     for i in range(len(src)):
-        res.append(src[i] + message[i])
+        try:
+            res.append(src[i] + message[i])
+        except IndexError:
+            res.append(src[i] + empty)
+
     return res
 
 
