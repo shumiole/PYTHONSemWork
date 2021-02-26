@@ -74,8 +74,12 @@ def encrypt(src, message=DEFAULT_MESSAGE):
 
 
 def decrypt():
-    with open(DEFAULT_INPUT) as file:
-        lines = file.readlines()
+    try:
+        with open(DEFAULT_INPUT) as file:
+            lines = file.readlines()
+    except FileNotFoundError:
+        print("File not found.")
+        sys.exit()
 
     source = []
     for x in lines[-1]:
@@ -96,19 +100,19 @@ def decrypt():
             print(chr(int(it, 2)), end='')
 
 
-# mode = input("Please, choose mode:\n"
-#              "1. Encrypt message to PNM P4 picture.\n"
-#              "2. Decrypt message from PNM P4 picture.\n"
-#              "[1/2]?\t")
-#
-# verify_input(mode)
+mode = input("Please, choose mode:\n"
+             "1. Encrypt message to PNM P4 picture.\n"
+             "2. Decrypt message from PNM P4 picture. (file \'output.pbm\' should be in the directory)\n"
+             "[1/2]?\t")
 
-generate_test_image()
-bitmap = get_bitmap()
+verify_input(mode)
 
-mode = '1'
-if mode == '2':
+if mode == '1':
+    generate_test_image()
+    bitmap = get_bitmap()
     write_output(encrypt(bitmap))
+    print("DONE!")
+    print("Image \'output.pbm\' saved")
 else:
     decrypt()
 
